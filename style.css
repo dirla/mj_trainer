@@ -2,8 +2,8 @@
     --bg-color: #2c3e50;
     --table-color: #27ae60;
     --card-bg: #ecf0f1;
-    --text-color: #333; 
-    --text-color-light: #ecf0f1; 
+    --text-color: #333;
+    --text-color-light: #ecf0f1;
     --highlight: #f1c40f;
     --border-radius: 6px;
 }
@@ -13,20 +13,20 @@ body {
     background-color: var(--bg-color);
     color: white;
     margin: 0;
-    height: 100vh; 
+    height: 100vh;
     display: flex;
     flex-direction: column;
-    overflow: hidden; 
+    overflow: hidden;
 }
 
 /* --- 頂部 Header --- */
 header {
     padding: 10px 20px;
-    background: rgba(0,0,0,0.2); 
+    background: rgba(0,0,0,0.2);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    flex-shrink: 0; 
+    flex-shrink: 0;
     border-bottom: 1px solid rgba(255,255,255,0.1);
 }
 
@@ -46,28 +46,28 @@ h1 { margin: 0; font-size: 1.3rem; letter-spacing: 1px; color: var(--text-color-
     transition: all 0.2s ease;
 }
 
-.nav-btn:hover { 
-    background: rgba(255, 255, 255, 0.1); 
+.nav-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
     border-color: #fff;
     color: #fff;
 }
 
-.nav-btn.active { 
-    background: var(--highlight); 
-    border-color: var(--highlight); 
-    color: #2c3e50; 
-    font-weight: bold; 
+.nav-btn.active {
+    background: var(--highlight);
+    border-color: var(--highlight);
+    color: #2c3e50;
+    font-weight: bold;
     box-shadow: 0 0 10px rgba(241, 196, 15, 0.3);
 }
 
 /* --- 主內容區容器 --- */
 .content-view {
-    flex: 1; 
+    flex: 1;
     display: flex;
     flex-direction: column;
     padding: 10px;
-    gap: 15px; 
-    overflow: hidden; 
+    gap: 15px;
+    overflow: hidden;
     position: relative;
 }
 
@@ -78,46 +78,39 @@ h1 { margin: 0; font-size: 1.3rem; letter-spacing: 1px; color: var(--text-color-
     background-color: var(--table-color);
     border: 6px solid #d35400;
     border-radius: 12px;
-    padding: 15px; /* 增加內距 */
+    padding: 15px;
     width: 98%;
-    max-width: 1300px; /* 放寬最大寬度，容納大牌 */
+    max-width: 1300px;
     margin: 0 auto;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.4); 
-    flex-shrink: 0; 
+    box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+    flex-shrink: 0;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     position: relative;
-    
-    /* 防止小螢幕牌爆出去 */
-    overflow-x: auto; 
+    overflow-x: auto;
 }
 
 /* 狀態列 */
-#handStatus { 
-    font-size: 1rem; /* 字體加大 */
-    margin-top: 8px; 
-    color: #f1c40f; 
-    font-weight: bold; 
+#handStatus {
+    font-size: 1rem;
+    margin-top: 8px;
+    color: #f1c40f;
+    font-weight: bold;
     text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
 }
 
 /* --- 麻將牌樣式 (加大版) --- */
 .tile {
-    /* 修改重點：大幅增加尺寸 */
-    width: 44px;  /* 原本 34 */
-    height: 60px; /* 原本 46 */
-    
+    width: 44px;
+    height: 60px;
     background-color: var(--card-bg);
     border-radius: 6px;
     display: flex;
     justify-content: center;
     align-items: center;
-    
-    /* 修改重點：字體加大 */
-    font-size: 32px; /* 原本 24 */
-    
+    font-size: 32px;
     color: black;
     box-shadow: 2px 3px 5px rgba(0,0,0,0.4), inset 0 0 5px rgba(255,255,255,0.6);
     cursor: default;
@@ -131,40 +124,40 @@ h1 { margin: 0; font-size: 1.3rem; letter-spacing: 1px; color: var(--text-color-
 .tile.blue { color: #2980b9; }
 
 /* 明牌區 (落地牌) */
-.revealed-area { 
-    display: flex; 
-    gap: 15px; /* 增加間距 */
-    margin-bottom: 10px; 
-    min-height: 65px; /* 增加高度容器 */
+.revealed-area {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 10px;
+    min-height: 65px;
 }
 
-.revealed-group { 
-    display: flex; 
-    gap: 2px; 
-    background: rgba(0,0,0,0.25); 
-    padding: 5px; 
-    border-radius: 6px; 
-    position: relative; 
+.revealed-group {
+    display: flex;
+    gap: 2px;
+    background: rgba(0,0,0,0.25);
+    padding: 5px;
+    border-radius: 6px;
+    position: relative;
 }
 
-.revealed-group::after { 
-    content: attr(data-type); 
-    position: absolute; 
-    top: -16px; /* 調整標籤位置 */
-    left: 50%; 
-    transform: translateX(-50%); 
-    font-size: 11px; 
-    color: #ddd; 
+.revealed-group::after {
+    content: attr(data-type);
+    position: absolute;
+    top: -16px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 11px;
+    color: #ddd;
     white-space: nowrap;
     text-shadow: 1px 1px 1px black;
 }
 
-/* 落地牌 (稍微比手牌小一點，但也加大了) */
+/* 落地牌 */
 .revealed-group .tile {
     width: 38px;
     height: 52px;
     font-size: 26px;
-    background-color: #dcdde1; 
+    background-color: #dcdde1;
 }
 
 /* 手牌區 */
@@ -172,26 +165,26 @@ h1 { margin: 0; font-size: 1.3rem; letter-spacing: 1px; color: var(--text-color-
 .separator { width: 12px; margin: 0 8px; background: rgba(255,255,255,0.3); height: 55px; }
 
 /* 胡牌區塊 */
-.winning-tile-section { 
-    margin-left: 20px; 
-    border-left: 2px dashed rgba(255,255,255,0.5); 
-    padding-left: 15px; 
-    display: flex; 
-    align-items: center; 
-    color: #f1c40f; 
-    font-weight: bold; 
-    font-size: 1rem; 
+.winning-tile-section {
+    margin-left: 20px;
+    border-left: 2px dashed rgba(255,255,255,0.5);
+    padding-left: 15px;
+    display: flex;
+    align-items: center;
+    color: #f1c40f;
+    font-weight: bold;
+    font-size: 1rem;
 }
 
 /* --- 2. 控制面板與瀑布流 --- */
 .controls {
     background: transparent;
     box-shadow: none;
-    padding: 0; 
-    flex: 1; 
+    padding: 0;
+    flex: 1;
     display: flex;
     flex-direction: column;
-    overflow: hidden; 
+    overflow: hidden;
     width: 98%;
     max-width: 1400px;
     margin: 0 auto;
@@ -200,13 +193,13 @@ h1 { margin: 0; font-size: 1.3rem; letter-spacing: 1px; color: var(--text-color-
 /* 瀑布流容器 */
 .options-container {
     flex: 1;
-    overflow-y: auto; 
-    display: block; 
-    column-count: 5; 
-    column-gap: 20px; 
-    padding: 5px 15px 5px 5px; 
+    overflow-y: auto;
+    display: block;
+    column-count: 5;
+    column-gap: 20px;
+    padding: 5px 15px 5px 5px;
     scrollbar-width: thin;
-    scrollbar-color: rgba(255,255,255,0.3) transparent; 
+    scrollbar-color: rgba(255,255,255,0.3) transparent;
 }
 
 .options-container::-webkit-scrollbar { width: 6px; }
@@ -217,35 +210,34 @@ h1 { margin: 0; font-size: 1.3rem; letter-spacing: 1px; color: var(--text-color-
 /* RWD */
 @media (max-width: 1400px) { .options-container { column-count: 4; } }
 @media (max-width: 1100px) { .options-container { column-count: 3; } }
-@media (max-width: 800px) { 
-    body { height: auto; overflow: auto; } 
+@media (max-width: 800px) {
+    body { height: auto; overflow: auto; }
     .game-table { position: sticky; top: 0; z-index: 10; }
-    .options-container { column-count: 2; max-height: 500px; } 
+    .options-container { column-count: 2; max-height: 500px; }
     .controls { overflow: visible; }
 }
 @media (max-width: 500px) { .options-container { column-count: 1; } }
 
-/* 分類區塊 (線框風格) */
+/* 分類區塊 */
 .category-block {
-    background: transparent; 
-    border: 1px solid rgba(255, 255, 255, 0.3); 
-    box-shadow: none; 
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: none;
     border-radius: 8px;
     padding: 10px;
-    margin-bottom: 20px; 
+    margin-bottom: 20px;
     break-inside: avoid;
     page-break-inside: avoid;
     display: inline-block;
     width: 100%;
 }
 
-/* 分類標題 */
 .category-title {
     font-size: 0.9rem;
     font-weight: bold;
-    color: var(--text-color-light); 
+    color: var(--text-color-light);
     background: transparent;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.3); 
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
     padding: 2px 0;
     margin-bottom: 8px;
     text-align: left;
@@ -267,52 +259,51 @@ h1 { margin: 0; font-size: 1.3rem; letter-spacing: 1px; color: var(--text-color-
     padding: 4px 6px;
     cursor: pointer;
     line-height: 1.3;
-    background: rgba(255, 255, 255, 0.15); 
+    background: rgba(255, 255, 255, 0.15);
     border: 1px solid rgba(255,255,255,0.1);
-    color: rgba(255, 255, 255, 0.9); 
+    color: rgba(255, 255, 255, 0.9);
     border-radius: 4px;
     transition: all 0.2s;
-    position: relative; 
+    position: relative;
 }
 
-.checkbox-item:hover { 
-    background: rgba(255, 255, 255, 0.3); 
+.checkbox-item:hover {
+    background: rgba(255, 255, 255, 0.3);
     border-color: rgba(255, 255, 255, 0.5);
     transform: translateY(-1px);
 }
 
 .checkbox-item input { margin-right: 6px; margin-top: 3px; accent-color: var(--highlight); }
 
-/* --- Tooltip (Pop Up) --- */
+/* Tooltip */
 .checkbox-item[title]:hover::after {
     content: attr(title);
     position: absolute;
-    bottom: 100%; 
-    left: 50%; 
+    bottom: 100%;
+    left: 50%;
     transform: translateX(-50%);
     margin-bottom: 8px;
     background: rgba(0, 0, 0, 0.95);
     color: #fff;
     padding: 8px 12px;
     border-radius: 4px;
-    width: max-content; 
-    max-width: 200px; 
+    width: max-content;
+    max-width: 200px;
     z-index: 9999;
     font-size: 0.85rem;
     box-shadow: 0 4px 10px rgba(0,0,0,0.5);
     border: 1px solid rgba(255,255,255,0.3);
-    pointer-events: none; 
-    white-space: pre-wrap; 
+    pointer-events: none;
+    white-space: pre-wrap;
 }
 
-/* Tooltip 箭頭 */
 .checkbox-item[title]:hover::before {
     content: '';
     position: absolute;
     bottom: 100%;
     left: 50%;
     transform: translateX(-50%);
-    margin-bottom: 2px; 
+    margin-bottom: 2px;
     border-width: 6px;
     border-style: solid;
     border-color: rgba(0, 0, 0, 0.95) transparent transparent transparent;
@@ -324,7 +315,7 @@ h1 { margin: 0; font-size: 1.3rem; letter-spacing: 1px; color: var(--text-color-
 .input-group {
     background: rgba(0, 0, 0, 0.3);
     padding: 10px;
-    border-radius: 30px; 
+    border-radius: 30px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -350,22 +341,22 @@ button:hover { filter: brightness(1.2); box-shadow: 0 0 10px rgba(255,255,255,0.
     padding: 10px;
     border-radius: 8px;
     font-size: 0.9rem;
-    background: rgba(255, 255, 255, 0.95); 
+    background: rgba(255, 255, 255, 0.95);
     color: #333;
     border: none;
-    max-height: 100px; 
+    max-height: 100px;
     overflow-y: auto;
     box-shadow: 0 5px 15px rgba(0,0,0,0.3);
 }
 .result-correct { border-left: 5px solid #27ae60; }
 .result-wrong { border-left: 5px solid #c0392b; }
 
-/* --- 番數說明書 (Reference Tab) --- */
+/* --- 番數說明書 --- */
 .reference-container {
     width: 95%;
     max-width: 1000px;
     margin: 0 auto;
-    background: white; 
+    background: white;
     border-radius: 8px;
     padding: 20px;
     color: #333;
@@ -375,6 +366,41 @@ button:hover { filter: brightness(1.2); box-shadow: 0 0 10px rgba(255,255,255,0.
     box-shadow: 0 0 20px rgba(0,0,0,0.3);
 }
 
+.ref-table th { background-color: #2c3e50; color: white; border: none; }
+.ref-table td { vertical-align: middle; border-bottom: 1px solid #eee; }
+
+.example-cell {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    align-items: center;
+    min-width: 100px;
+}
+
+/* 縮小版麻將牌 */
+.mini-tile {
+    width: 24px;
+    height: 34px;
+    font-size: 18px;
+    border-radius: 3px;
+    background-color: #ecf0f1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+    cursor: default;
+    user-select: none;
+    font-family: "Segoe UI Emoji", "Apple Color Emoji", sans-serif;
+    color: black;
+    border: 1px solid #bdc3c7;
+}
+
+.mini-tile.red { color: #c0392b; }
+.mini-tile.green { color: #27ae60; }
+.mini-tile.blue { color: #2980b9; }
+
+.example-spacer { width: 5px; }
+
 .ref-category { margin-bottom: 30px; }
 .ref-cat-title { background-color: #2c3e50; color: white; padding: 8px 15px; border-radius: 4px; font-weight: bold; }
 
@@ -383,4 +409,12 @@ button:hover { filter: brightness(1.2); box-shadow: 0 0 10px rgba(255,255,255,0.
 .ref-table th { background-color: #f1f2f6; color: #2c3e50; }
 .ref-table tr:nth-child(even) { background-color: #fdfdfd; }
 .ref-table tr:hover { background-color: #f0f8ff; }
-.fan-col { color: #c0392b; font-weight: bold; text-align: center; width: 80px; }
+
+/* 調整番數欄寬度以容納 "120 / 180" */
+.fan-col {
+    color: #c0392b;
+    font-weight: bold;
+    text-align: center;
+    width: 110px;
+    white-space: nowrap;
+}
