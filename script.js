@@ -1,60 +1,179 @@
-// --- 1. 牌型資料庫 (完整版) ---
+// --- 1. 牌型資料庫 (真正完整版：包含所有分類) ---
 const patternList = [
     // === 基礎與字花 ===
     { id: 'no-flower', name: '無花', desc: '沒有花', fan: 2, cat: '基礎與環境' },
     { id: 'has-flower', name: '花', desc: '每有一隻花', fan: 2, cat: '基礎與環境' },
     { id: 'has-honor', name: '字', desc: '每有三隻番子(刻子)', fan: 2, cat: '基礎與環境' },
     { id: 'no-honor', name: '無字', desc: '沒有番子', fan: 2, cat: '基礎與環境' },
-    { id: 'menqing', name: '門清', desc: '沒有上/碰/明槓', fan: 5, cat: '基礎與環境' },
+    { id: 'menqing', name: '門清', desc: '沒有從玩家手中上牌/碰牌', fan: 5, cat: '基礎與環境' },
     { id: 'pinghu', name: '平糊', desc: '全部由順子組成 + 無花無字', fan: 5, cat: '基礎與環境' },
-    { id: 'eye-258', name: '將眼', desc: '眼牌是2/5/8', fan: 2, cat: '基礎與環境' },
+    { id: 'eye-258', name: '將眼', desc: '眼牌是為二/五/八的數字', fan: 2, cat: '基礎與環境' },
 
     // === 聽牌與胡牌方式 ===
-    { id: 'zimo', name: '自摸', desc: '自己摸牌食胡', fan: 1, cat: '聽牌與胡牌' },
+    { id: 'ready', name: '聽牌', desc: '宣告聽牌,不得更換手牌', fan: 5, cat: '聽牌與胡牌' },
+    { id: 'menqing-ready', name: '門清+聽牌', desc: '在門清的情況下宣告聽牌', fan: 15, cat: '聽牌與胡牌' },
+    { id: 'ippatsu', name: '一發', desc: '宣告聽牌在該玩家未打出第二隻牌時食胡', fan: 5, cat: '聽牌與胡牌' },
+    { id: 'zimo', name: '自摸', desc: '自己摸的牌是食胡的一隻', fan: 1, cat: '聽牌與胡牌' },
     { id: 'menqing-zimo', name: '門清自摸', desc: '門清情況下自摸', fan: 3, cat: '聽牌與胡牌' },
-    { id: 'full-seek', name: '全求人', desc: '全副牌落地，單吊食胡', fan: 30, cat: '聽牌與胡牌' },
-    
-    // === 混清與對對 ===
+    { id: 'flower-zimo', name: '花摸', desc: '拿到花後補牌食胡', fan: 2, cat: '聽牌與胡牌' },
+    { id: 'kong-zimo', name: '槓摸', desc: '槓牌後補牌食胡', fan: 5, cat: '聽牌與胡牌' },
+    { id: 'rob-kong', name: '搶槓', desc: '其他玩家明槓自己可以食胡的牌', fan: 5, cat: '聽牌與胡牌' },
+    { id: 'full-seek', name: '全求人', desc: '所有牌都是上和碰組成時,食別人打出牌', fan: 30, cat: '聽牌與胡牌' },
+    { id: 'half-seek', name: '半求人', desc: '所有牌都是上和碰組成時,自摸', fan: 15, cat: '聽牌與胡牌' },
+    { id: 'dark-last', name: '暗絕', desc: '加上所有棄牌,食胡牌是最後一隻', fan: 8, cat: '聽牌與胡牌' },
+    { id: 'bright-last', name: '明絕', desc: '只計算所有棄牌,食胡牌是最後一隻', fan: 15, cat: '聽牌與胡牌' },
+
+    // === 步高 (Step High) ===
+    { id: 'ming-mixed-step-3', name: '明三色三步高', desc: '以三種花色的三組連順,明牌', fan: 5, cat: '步高與龍' },
+    { id: 'an-mixed-step-3', name: '暗三色三步高', desc: '手牌內有以三種花色的三組連順', fan: 10, cat: '步高與龍' },
+    { id: 'ming-mixed-step-4', name: '明三色四步高', desc: '以三種花色的四組連順,明牌', fan: 20, cat: '步高與龍' },
+    { id: 'an-mixed-step-4', name: '暗三色四步高', desc: '手牌內有以三種花色的四組連順', fan: 30, cat: '步高與龍' },
+    { id: 'ming-mixed-step-5', name: '明三色五步高', desc: '以三種花色的五組連順,明牌', fan: 50, cat: '步高與龍' },
+    { id: 'an-mixed-step-5', name: '暗三色五步高', desc: '手牌內有以三種花色的五組連順', fan: 80, cat: '步高與龍' },
+    { id: 'ming-pure-step-3', name: '明一色三步高', desc: '以同一種花色的三組連順,明牌', fan: 15, cat: '步高與龍' },
+    { id: 'an-pure-step-3', name: '暗一色三步高', desc: '手牌內有以同一種花色的三組連順', fan: 25, cat: '步高與龍' },
+    { id: 'ming-pure-step-4', name: '明一色四步高', desc: '以同一種花色的三組連順,明牌', fan: 50, cat: '步高與龍' },
+    { id: 'an-pure-step-4', name: '暗一色四步高', desc: '手牌內有以同一種花色的三組連順', fan: 80, cat: '步高與龍' },
+    { id: 'ming-pure-step-5', name: '明一色五步高', desc: '以同一種花色的三組連順,明牌', fan: 120, cat: '步高與龍' },
+    { id: 'an-pure-step-5', name: '暗一色五步高', desc: '手牌內有以同一種花色的三組連順', fan: 180, cat: '步高與龍' },
+
+    // === 龍 (Dragons) ===
+    { id: 'ming-mixed-dragon', name: '明雜龍', desc: '以三個組合內包含三種花色組成的完整1-9順子,明牌', fan: 8, cat: '步高與龍' },
+    { id: 'an-mixed-dragon', name: '暗雜龍', desc: '手牌中有以三個組合內包含三種花色組成的完整1-9順子', fan: 15, cat: '步高與龍' },
+    { id: 'ming-pure-dragon', name: '明清龍', desc: '以三個組合內包含同一種花色組成的完整1-9順子,明牌', fan: 10, cat: '步高與龍' },
+    { id: 'an-pure-dragon', name: '暗清龍', desc: '手牌中有以三個組合內包含同一種花色組成的完整1-9順子', fan: 20, cat: '步高與龍' },
+
+    // === 清混與對對 ===
     { id: 'toitoi', name: '對對胡', desc: '全部組合皆是刻子', fan: 40, cat: '清混與對對' },
-    { id: 'hunyise', name: '混一色', desc: '單一花色 + 番子', fan: 40, cat: '清混與對對' },
-    { id: 'qingyise', name: '清一色', desc: '只有一種花色', fan: 100, cat: '清混與對對' },
-    { id: 'ziyise', name: '字一色', desc: '全副牌由番子組成', fan: 160, cat: '清混與對對' },
+    { id: 'hunyise', name: '混一色', desc: '全副牌以一種花色和番子組成', fan: 40, cat: '清混與對對' },
+    { id: 'qingyise', name: '清一色', desc: '全副牌只有一種花色', fan: 100, cat: '清混與對對' },
+    { id: 'ziyise', name: '字一色', desc: '全副牌以番子組成', fan: 160, cat: '清混與對對' },
 
     // === 風與三元 ===
-    { id: 'small-3-winds', name: '小三風', desc: '兩刻風 + 一眼風', fan: 20, cat: '風與三元' },
-    { id: 'big-3-winds', name: '大三風', desc: '三刻風', fan: 40, cat: '風與三元' },
-    { id: 'small-3-dragons', name: '小三元', desc: '兩刻箭 + 一眼箭', fan: 30, cat: '風與三元' },
-    { id: 'big-3-dragons', name: '大三元', desc: '三刻箭', fan: 60, cat: '風與三元' },
-    { id: 'small-4-winds', name: '小四喜', desc: '三刻風 + 一眼風', fan: 80, cat: '風與三元' },
-    { id: 'big-4-winds', name: '大四喜', desc: '四刻風', fan: 120, cat: '風與三元' },
+    { id: 'small-3-winds', name: '小三風', desc: '有兩組風牌的刻子和一組風牌的眼', fan: 20, cat: '風與三元' },
+    { id: 'big-3-winds', name: '大三風', desc: '有三組風牌的刻子', fan: 40, cat: '風與三元' },
+    { id: 'small-3-dragons', name: '小三元', desc: '有紅中發財白板其中兩組的刻子以及餘下的一種作為眼', fan: 30, cat: '風與三元' },
+    { id: 'big-3-dragons', name: '大三元', desc: '有紅中發財白板三組刻子', fan: 60, cat: '風與三元' },
+    { id: 'small-4-winds', name: '小四喜', desc: '有三組風牌的刻子和一組風牌的眼', fan: 80, cat: '風與三元' },
+    { id: 'big-4-winds', name: '大四喜', desc: '有四組風牌的刻子', fan: 120, cat: '風與三元' },
 
-    // === 步高與龍 (Step & Dragon) ===
-    { id: 'ming-mixed-step-3', name: '三色三步高', desc: '三種花色三組數字遞增的順子 (如 123m 234p 345s)', fan: 5, cat: '步高與龍' },
-    { id: 'ming-pure-step-3', name: '一色三步高', desc: '同一花色三組數字遞增的順子 (如 123 234 345)', fan: 15, cat: '步高與龍' },
-    { id: 'ming-mixed-dragon', name: '雜龍', desc: '三種花色組成 123, 456, 789', fan: 8, cat: '步高與龍' },
-    { id: 'ming-pure-dragon', name: '清龍', desc: '同一花色組成 123, 456, 789', fan: 10, cat: '步高與龍' },
+    // === 特殊與雜項 ===
+    { id: 'tanyao', name: '斷么', desc: '沒有數字1/9和番子', fan: 8, cat: '特殊與雜項' },
+    { id: 'miss-one', name: '缺一門', desc: '缺少筒/索/萬任意一種 (需無番子)', fan: 8, cat: '特殊與雜項' },
+    { id: 'miss-five', name: '缺五', desc: '沒有數字五的牌', fan: 8, cat: '特殊與雜項' },
+    { id: 'less-5', name: '小於五', desc: '全副牌只由數字1-4的順子或刻子組成', fan: 50, cat: '特殊與雜項' },
+    { id: 'more-5', name: '大於五', desc: '全副牌只由數字6-9的順子或刻子組成', fan: 50, cat: '特殊與雜項' },
+    { id: 'chicken', name: '雞胡', desc: '食胡時只有一番', fan: 30, cat: '特殊與雜項' },
+    { id: 'duck', name: '鴨胡', desc: '自摸時,撇除自摸的番數,只有一番', fan: 15, cat: '特殊與雜項' },
+    
+    // === 老少/帶么/老頭 ===
+    { id: 'laoshao-chow', name: '老少上', desc: '有一組數字123和數字789的組合', fan: 3, cat: '老少與帶么' },
+    { id: 'ming-double-laoshao', name: '明雙老少上', desc: '有兩組數字123和數字789的明牌順子', fan: 10, cat: '老少與帶么' },
+    { id: 'an-double-laoshao', name: '暗雙老少上', desc: '有兩組在手牌中數字123和數字789的順子', fan: 15, cat: '老少與帶么' },
+    { id: 'laoshao-pong', name: '老少碰', desc: '有一組從其他玩家手中碰的刻子數字111和數字999組合', fan: 5, cat: '老少與帶么' },
+    { id: 'double-shao-pong', name: '雙少碰', desc: '有兩組從其他玩家手中碰的刻子數字111和數字999組合', fan: 20, cat: '老少與帶么' },
+    { id: 'hun-dai-yao', name: '混帶么', desc: '全副牌的每組順子/刻子/眼都包含數字1、9或番子', fan: 30, cat: '老少與帶么' },
+    { id: 'qing-dai-yao', name: '清帶么', desc: '只用帶有數字1和9的順子和1/9的眼組成的手牌', fan: 80, cat: '老少與帶么' },
+    { id: 'hun-lao-tou', name: '混老頭', desc: '全副牌由數字1、9的刻子和番子組成 (不計對對胡)', fan: 60, cat: '老少與帶么' },
+    { id: 'qing-lao-tou', name: '清老頭', desc: '全副牌只由數字1、9的刻子/眼組成 (不計對對胡)', fan: 220, cat: '老少與帶么' },
+    { id: 'hun-dai-x', name: '混帶X', desc: '撇除番子,全副手牌的全部組合都有其中一個數字', fan: 30, cat: '老少與帶么' },
+    { id: 'quan-dai-x', name: '全帶X', desc: '沒有番子,全副手牌的全部組合都有其中一個數字', fan: 100, cat: '老少與帶么' },
 
-    // === 姊妹與相逢 (Sisters) ===
-    { id: 'sisters-2', name: '二姊妹', desc: '兩組數字相連的刻子 (如 222, 333)', fan: 5, cat: '兄弟姊妹' },
+    // === 槓與暗刻 ===
+    { id: 'ming-gang', name: '明槓', desc: '用三隻相同牌碰牌或碰牌後再摸到最後一隻用作槓牌', fan: 1, cat: '槓與暗刻' },
+    { id: 'an-gang', name: '暗槓', desc: '手持四隻相同牌時槓牌', fan: 2, cat: '槓與暗刻' },
+    { id: 'gang-3', name: '三槓', desc: '有三組槓的組合', fan: 30, cat: '槓與暗刻' },
+    { id: 'gang-4', name: '四槓', desc: '有四組槓的組合', fan: 60, cat: '槓與暗刻' },
+    { id: 'gang-5', name: '五槓', desc: '有五組槓的組合', fan: 120, cat: '槓與暗刻' },
+    { id: 'anke-2', name: '二暗刻', desc: '手牌內有兩組刻子', fan: 5, cat: '槓與暗刻' },
+    { id: 'anke-3', name: '三暗刻', desc: '手牌內有三組刻子', fan: 15, cat: '槓與暗刻' },
+    { id: 'anke-4', name: '四暗刻', desc: '手牌內有四組刻子', fan: 30, cat: '槓與暗刻' },
+    { id: 'anke-5', name: '五暗刻', desc: '手牌內有五組刻子', fan: 80, cat: '槓與暗刻' },
+    { id: 'kankanhhu', name: '坎坎胡', desc: '門清對對胡 (包對對)', fan: 160, cat: '槓與暗刻' },
+
+    // === 兄弟姊妹 ===
+    { id: 'brothers-2', name: '二兄弟', desc: '兩組不同花色但數字相同的刻子', fan: 5, cat: '兄弟姊妹' },
+    { id: 'brothers-small-3', name: '小三兄弟', desc: '兩組數字相同的刻子和相同數字的眼', fan: 15, cat: '兄弟姊妹' },
+    { id: 'brothers-big-3', name: '大三兄弟', desc: '三組不同花色但數字相同的刻子', fan: 30, cat: '兄弟姊妹' },
+    { id: 'sisters-2', name: '二姊妹', desc: '兩組數字相連的刻子', fan: 5, cat: '兄弟姊妹' },
+    { id: 'sisters-small-3', name: '小三姊妹', desc: '兩組數字相連的刻子加上數字相連的眼', fan: 10, cat: '兄弟姊妹' },
     { id: 'sisters-big-3', name: '大三姊妹', desc: '三組數字相連的刻子', fan: 20, cat: '兄弟姊妹' },
-    { id: 'xiangfeng-3', name: '三相逢', desc: '三組不同花色但數字相同的順子 (如 234m, 234p, 234s)', fan: 10, cat: '兄弟姊妹' },
-    { id: 'brothers-big-3', name: '大三兄弟', desc: '三組不同花色但數字相同的刻子 (如 222m, 222p, 222s)', fan: 30, cat: '兄弟姊妹' },
+    { id: 'sisters-small-4', name: '小四姊妹', desc: '三組數字相連的刻子加上數字相連的眼', fan: 35, cat: '兄弟姊妹' },
+    { id: 'sisters-big-4', name: '大四姊妹', desc: '四組數字相連的刻子', fan: 50, cat: '兄弟姊妹' },
+    { id: 'sisters-small-5', name: '小五姊妹', desc: '四組數字相連的刻子加上數字相連的眼', fan: 70, cat: '兄弟姊妹' },
+    { id: 'sisters-big-5', name: '大五姊妹', desc: '五組數字相連的刻子', fan: 90, cat: '兄弟姊妹' },
+    { id: 'sisters-small-6', name: '小六姊妹', desc: '五組數字相連的刻子加上數字相連的眼', fan: 120, cat: '兄弟姊妹' },
+    
+    // === 雜連刻 (Mixed Sisters) ===
+    { id: 'mixed-sisters-small-3', name: '小三雜連刻', desc: '兩組由不同花色但數字相連的刻子和數字相連的眼', fan: 8, cat: '兄弟姊妹' },
+    { id: 'mixed-sisters-big-3', name: '大三雜連刻', desc: '三組由不同花色但數字相連的刻子', fan: 15, cat: '兄弟姊妹' },
+    { id: 'mixed-sisters-small-4', name: '小四雜連刻', desc: '三組由不同花色但數字相連的刻子和數字相連的眼', fan: 25, cat: '兄弟姊妹' },
+    { id: 'mixed-sisters-big-4', name: '大四雜連刻', desc: '四組由不同花色但數字相連的刻子', fan: 35, cat: '兄弟姊妹' },
+    { id: 'mixed-sisters-small-5', name: '小五雜連刻', desc: '四組由不同花色但數字相連的刻子和數字相連的眼', fan: 50, cat: '兄弟姊妹' },
+    { id: 'mixed-sisters-big-5', name: '大五雜連刻', desc: '五組由不同花色但數字相連的刻子', fan: 65, cat: '兄弟姊妹' },
+    { id: 'mixed-sisters-small-6', name: '小六雜連刻', desc: '五組由不同花色但數字相連的刻子和數字相連的眼', fan: 90, cat: '兄弟姊妹' },
+    
+    // === 相逢與般高 ===
+    { id: 'xiangfeng-2', name: '二相逢', desc: '兩組不同花色但數字相同的順子', fan: 3, cat: '相逢與般高' },
+    { id: 'ming-double-sisters', name: '明雙姊妹', desc: '至少有一個組合是明牌的兩個二相逢', fan: 10, cat: '相逢與般高' },
+    { id: 'an-double-sisters', name: '暗雙姊妹', desc: '手牌內的兩個二相逢', fan: 15, cat: '相逢與般高' },
+    { id: 'xiangfeng-3', name: '三相逢', desc: '三組不同花色但數字相同的順子', fan: 10, cat: '相逢與般高' },
+    { id: 'ming-same-seq-4', name: '明四同順', desc: '四組不同花色但數字相同的順子,明牌', fan: 30, cat: '相逢與般高' },
+    { id: 'an-same-seq-4', name: '暗四同順', desc: '手牌內有四組不同花色但數字相同的順子', fan: 50, cat: '相逢與般高' },
+    { id: 'ming-same-seq-5', name: '明五同順', desc: '五組不同花色但數字相同的順子,明牌', fan: 80, cat: '相逢與般高' },
+    { id: 'an-same-seq-5', name: '暗五同順', desc: '手牌內有五組不同花色但數字相同的順子', fan: 120, cat: '相逢與般高' },
+    { id: 'full-sisters', name: '全姊妹', desc: '三相逢和與前面組合不一樣的二相逢 (另+20番)', fan: 20, cat: '相逢與般高' },
+    { id: 'ming-pure-full-sisters', name: '明純正全姊妹', desc: '每種花色組合不出現超過兩次的全姊妹,明牌', fan: 40, cat: '相逢與般高' },
+    { id: 'an-pure-full-sisters', name: '暗純正全姊妹', desc: '手牌內每種花色組合不出現超過兩次的全姊妹', fan: 60, cat: '相逢與般高' },
 
-    // === 老少與帶么 ===
-    { id: 'laoshao-chow', name: '老少上', desc: '同花色 123 和 789 順子', fan: 3, cat: '老少與帶么' },
-    { id: 'laoshao-pong', name: '老少碰', desc: '同花色 111 和 999 刻子', fan: 5, cat: '老少與帶么' },
-    { id: 'tanyao', name: '斷么', desc: '無1, 9及番子', fan: 8, cat: '老少與帶么' },
-    { id: 'hun-dai-yao', name: '混帶么', desc: '全帶1, 9或番子', fan: 30, cat: '老少與帶么' },
-    { id: 'qing-dai-yao', name: '清帶么', desc: '全帶1, 9 (無番子)', fan: 80, cat: '老少與帶么' },
-    { id: 'hun-lao-tou', name: '混老頭', desc: '全由1, 9刻子和番子組成', fan: 60, cat: '老少與帶么' },
-    { id: 'qing-lao-tou', name: '清老頭', desc: '全由1, 9刻子組成', fan: 220, cat: '老少與帶么' },
+    { id: 'ming-bangao', name: '明一般高', desc: '至少有一組明牌,兩組完全相同的順子', fan: 5, cat: '相逢與般高' },
+    { id: 'an-bangao', name: '暗一般高', desc: '手牌內的兩組完全相同的順子', fan: 8, cat: '相逢與般高' },
+    { id: 'ming-double-bangao', name: '明雙般高', desc: '至少有一個組合明牌的兩個一般高', fan: 20, cat: '相逢與般高' },
+    { id: 'an-double-bangao', name: '暗雙般高', desc: '手牌內有兩組一般高', fan: 30, cat: '相逢與般高' },
+    { id: 'ming-bangao-3', name: '明三般高', desc: '至少有一組明牌,三組完全相同的順子', fan: 30, cat: '相逢與般高' },
+    { id: 'an-bangao-3', name: '暗三般高', desc: '三組完全相同的順子', fan: 50, cat: '相逢與般高' },
+    { id: 'ming-bangao-4', name: '明四般高', desc: '至少有一組明牌,四組完全相同的順子', fan: 200, cat: '相逢與般高' },
+    { id: 'an-bangao-4', name: '暗四般高', desc: '四組完全相同的順子', fan: 300, cat: '相逢與般高' },
+    { id: 'ming-full-bangao', name: '明全般高', desc: '至少有一組明牌,一個三般高+一個一般高', fan: 80, cat: '相逢與般高' },
+    { id: 'an-full-bangao', name: '暗全般高', desc: '手牌內有一個三般高+一個一般高', fan: 120, cat: '相逢與般高' },
 
-    // === 嚦咕與特殊 ===
-    { id: 'ligu', name: '嚦咕嚦咕', desc: '七對子 (包含刻子做兩對)', fan: 50, cat: '嚦咕與特殊' },
-    { id: 'ligu-seq-3', name: '嚦咕三連對', desc: '嚦咕中有三對數字相連', fan: 5, cat: '嚦咕與特殊' },
-    { id: 'miss-one', name: '缺一門', desc: '三門花色中缺少一門 (需無字)', fan: 8, cat: '嚦咕與特殊' },
-    { id: 'chicken', name: '雞胡', desc: '無任何大牌 (無花無字)', fan: 30, cat: '嚦咕與特殊' },
-    { id: 'duck', name: '鴨胡', desc: '自摸雞胡', fan: 15, cat: '嚦咕與特殊' }
+    // === 嚦咕 (Lik Gu) 系列 ===
+    { id: 'ligu', name: '嚦咕嚦咕', desc: '一組刻子加七對眼', fan: 50, cat: '嚦咕系列' },
+    { id: 'ligu-seq-3', name: '嚦咕三連對', desc: '在嚦咕嚦咕中數字相連的三對眼', fan: 5, cat: '嚦咕系列' },
+    { id: 'ligu-seq-4', name: '嚦咕四連對', desc: '在嚦咕嚦咕中數字相連的四對眼', fan: 10, cat: '嚦咕系列' },
+    { id: 'ligu-seq-5', name: '嚦咕五連對', desc: '在嚦咕嚦咕中數字相連的五對眼', fan: 20, cat: '嚦咕系列' },
+    { id: 'ligu-seq-6', name: '嚦咕六連對', desc: '在嚦咕嚦咕中數字相連的六對眼', fan: 40, cat: '嚦咕系列' },
+    { id: 'ligu-seq-7', name: '嚦咕七連對', desc: '在嚦咕嚦咕中數字相連的七對眼', fan: 80, cat: '嚦咕系列' },
+    { id: 'ligu-seq-8', name: '嚦咕八連對', desc: '在嚦咕嚦咕中數字相連的八對眼', fan: 160, cat: '嚦咕系列' },
+    { id: 'ligu-3-winds', name: '嚦咕三風', desc: '一組風牌的刻子加兩對不重複風牌的眼', fan: 15, cat: '嚦咕系列' },
+    { id: 'ligu-3-dragons', name: '嚦咕三元', desc: '中發白任意一組的刻子加各一對另外兩種的眼', fan: 20, cat: '嚦咕系列' },
+    { id: 'ligu-4-winds', name: '嚦咕四喜', desc: '一組風牌的刻子加三對不重複風牌的眼', fan: 30, cat: '嚦咕系列' },
+    { id: 'ligu-3-num', name: '嚦咕三數', desc: '所有對眼只包含三個數字', fan: 50, cat: '嚦咕系列' },
+    { id: 'ligu-2-num', name: '嚦咕二數', desc: '所有對眼只包含兩個數字', fan: 100, cat: '嚦咕系列' },
+
+    // === 特殊牌型 (13/16) ===
+    { id: '13-orphans', name: '十三么', desc: '集齊東南西北中發白和三種花色1至9...', fan: 120, cat: '特殊牌型' },
+    { id: '13-orphans-13-wait', name: '十三么十三面聽', desc: '食胡條件與十三么相同,聽十三隻牌', fan: 140, cat: '特殊牌型' },
+    { id: '16-unmatched', name: '十六不搭', desc: '東南西北中發白加上每種花色的三個數字...', fan: 50, cat: '特殊牌型' },
+    { id: '16-unmatched-16-wait', name: '十六不搭十六面聽', desc: '十六不搭聽十六張牌', fan: 60, cat: '特殊牌型' },
+    { id: 'unmatched-3-meet', name: '不搭三相逢', desc: '十六不搭的三種花色的數字都一樣', fan: 15, cat: '特殊牌型' },
+    { id: 'unmatched-mixed-dragon', name: '不搭雜龍', desc: '十六不搭三種花色的數字混合組成完整1-9順子', fan: 25, cat: '特殊牌型' },
+    { id: 'heaven', name: '天胡', desc: '莊家在第一次摸牌時自摸', fan: 160, cat: '特殊與雜項' },
+    { id: 'earth', name: '地胡', desc: '閒家在莊家打出第一隻時食胡', fan: 160, cat: '特殊與雜項' },
+    { id: 'human', name: '人胡', desc: '閒家在第一輪時自摸', fan: 130, cat: '特殊與雜項' },
+    { id: 'small-5-gate', name: '小五門齊', desc: '有齊萬/筒/索/風/三元其一做眼', fan: 10, cat: '特殊與雜項' },
+    { id: 'big-5-gate', name: '大五門齊', desc: '五組有齊萬/筒/索/風/三元', fan: 15, cat: '特殊與雜項' },
+    { id: 'small-7-gate', name: '小七門齊', desc: '小五門齊 + 兩種顏色的花', fan: 15, cat: '特殊與雜項' },
+    { id: 'big-7-gate', name: '大七門齊', desc: '大五門齊 + 兩種顏色的花', fan: 20, cat: '特殊與雜項' },
+    { id: 'double-ron', name: '雙響', desc: '同一隻牌有兩家表明食胡', fan: 5, cat: '特殊與雜項' },
+    { id: 'triple-ron', name: '三響', desc: '同一隻牌有三家表明食胡', fan: 10, cat: '特殊與雜項' },
+    { id: 'double-ron-rev', name: '雙響反摸', desc: '上一場被雙響後自模', fan: 5, cat: '特殊與雜項' },
+    { id: 'triple-ron-rev', name: '三響反摸', desc: '上一場被三響後自模', fan: 10, cat: '特殊與雜項' },
+    { id: 'haidi', name: '海底摸月', desc: '牌山最後一隻自摸', fan: 20, cat: '特殊與雜項' },
+    { id: 'hedi', name: '河底撈魚', desc: '食出其他玩家打出的本局最後一張牌', fan: 10, cat: '特殊與雜項' },
+    { id: 'discard-4', name: '四子內', desc: '在棄牌數只有四或更少時食胡', fan: 50, cat: '特殊與雜項' },
+    { id: 'discard-7', name: '七子內', desc: '在棄牌數只有七或更少時食胡', fan: 30, cat: '特殊與雜項' },
+    { id: 'discard-10', name: '十子內', desc: '在棄牌數只有十或更少時食胡', fan: 15, cat: '特殊與雜項' },
 ];
 
 // --- 2. 系統設定 ---
@@ -81,7 +200,7 @@ let currentHandData = {
     flowerCount: 0
 };
 
-// --- 3. 終極隨機胡牌生成引擎 ---
+// --- 3. 終極隨機胡牌生成引擎 (包含劇本模式) ---
 function generateNewHand() {
     // 重置
     document.getElementById('resultBox').style.display = 'none';
@@ -93,49 +212,38 @@ function generateNewHand() {
     const flowerCount = Math.floor(Math.random() * 5); 
     const deckTracker = initDeck();
 
-    // === 劇本選擇器 (Scenario Selector) ===
-    // 為了讓稀有牌型出現，我們隨機決定這次要生成的「牌型結構」
+    // === 劇本選擇器 ===
     const rand = Math.random();
     let scenario = 'normal';
     
-    if (rand < 0.1) scenario = 'ligu'; // 10% 嚦咕嚦咕
-    else if (rand < 0.25) scenario = 'sisters'; // 15% 姊妹/刻子類
+    if (rand < 0.1) scenario = 'ligu'; // 10% 嚦咕
+    else if (rand < 0.25) scenario = 'sisters'; // 15% 姊妹/刻子
     else if (rand < 0.40) scenario = 'step_dragon'; // 15% 步高/龍/相逢
-    else if (rand < 0.55) scenario = 'terminals'; // 15% 帶么/老頭/清一色
-    else scenario = 'normal'; // 45% 普通/混一色/平胡
+    else if (rand < 0.55) scenario = 'terminals'; // 15% 帶么/老頭
+    else scenario = 'normal'; 
 
     let handTiles = [];
     let revealed = [];
     let sets = [];
     let pair = [];
 
-    // --- 劇本 1: 嚦咕嚦咕 (七對子) ---
+    // --- 劇本執行 ---
     if (scenario === 'ligu') {
         let pairsCount = 0;
         let attempt = 0;
         while (pairsCount < 7 && attempt < 200) {
-            // 嘗試生成一對
             let p = generateRandomPair(null);
-            // 確保這對牌還沒被選過 (嚦咕通常不重複，若有四張一樣算兩對)
             if (tryDraw(deckTracker, p)) {
                 handTiles = handTiles.concat(p);
                 pairsCount++;
             }
             attempt++;
         }
-        // 嚦咕不落地
-        revealed = [];
-        // 為了相容 autoCalculateTypes，我們不填入 sets
     } 
-    
-    // --- 劇本 2-5: 標準結構 (4組 + 1眼) ---
     else {
-        // 設定偏好花色 (利於清/混一色)
         const preferSuit = ['m', 'p', 's'][Math.floor(Math.random() * 3)];
         
-        // 根據劇本預先生成特定組合
         if (scenario === 'sisters') {
-            // 強制生成姊妹 (222, 333)
             const start = Math.floor(Math.random() * 8) + 1;
             const t1 = start + preferSuit;
             const t2 = (start + 1) + preferSuit;
@@ -147,7 +255,6 @@ function generateNewHand() {
         else if (scenario === 'step_dragon') {
             const subType = Math.random();
             if (subType < 0.4) {
-                // 三相逢 (不同花色同數字順子)
                 const n = Math.floor(Math.random() * 7) + 1;
                 const s1 = [n+'m', (n+1)+'m', (n+2)+'m'];
                 const s2 = [n+'p', (n+1)+'p', (n+2)+'p'];
@@ -158,7 +265,6 @@ function generateNewHand() {
                     sets.push({ type: 'sequence', tiles: s3 });
                 }
             } else if (subType < 0.7) {
-                // 步高 (123m, 234p, 345s)
                 const n = Math.floor(Math.random() * 5) + 1;
                 const s1 = [n+'m', (n+1)+'m', (n+2)+'m'];
                 const s2 = [(n+1)+'p', (n+2)+'p', (n+3)+'p'];
@@ -169,11 +275,8 @@ function generateNewHand() {
                     sets.push({ type: 'sequence', tiles: s3 });
                 }
             } else {
-                // 龍 (123, 456, 789) - 可能是雜龍或清龍
                 const suits = [preferSuit, preferSuit, preferSuit]; 
-                if (Math.random() > 0.5) { // 雜龍
-                     suits[0] = 'm'; suits[1] = 'p'; suits[2] = 's';
-                }
+                if (Math.random() > 0.5) { suits[0] = 'm'; suits[1] = 'p'; suits[2] = 's'; }
                 const s1 = [1+suits[0], 2+suits[0], 3+suits[0]];
                 const s2 = [4+suits[1], 5+suits[1], 6+suits[1]];
                 const s3 = [7+suits[2], 8+suits[2], 9+suits[2]];
@@ -184,29 +287,17 @@ function generateNewHand() {
                 }
             }
         }
-        else if (scenario === 'terminals') {
-            // 帶么/老頭傾向：盡量生成 1, 9, 字
-            // 這裡不做強制邏輯，而是改變隨機生成器的權重
-        }
 
-        // 補足剩下的組數 (直到 5 組)
         while (sets.length < 5) {
             let setType = Math.random() > 0.5 ? 'sequence' : 'triplet';
-            // 根據劇本調整機率
-            if (scenario === 'terminals') {
-                // 帶么盡量出 1,9,字
-                // 這裡簡化：隨機生成，如果不合適就重試幾次
-            }
-            
             const candidate = generateRandomSet(setType, null, scenario === 'terminals');
             if (tryDraw(deckTracker, candidate.tiles)) {
                 sets.push(candidate);
             }
         }
 
-        // 生成眼
-        let pairAttempt = 0;
         let pairSuccess = false;
+        let pairAttempt = 0;
         while (!pairSuccess && pairAttempt < 100) {
             const candPair = generateRandomPair(null, scenario === 'terminals');
             if (tryDraw(deckTracker, candPair)) {
@@ -216,10 +307,8 @@ function generateNewHand() {
             pairAttempt++;
         }
 
-        // 分配落地與手牌
         const revealedCount = scenario === 'ligu' ? 0 : Math.floor(Math.random() * 4);
         let handSets = [];
-        
         for (let i = 0; i < 5; i++) {
             if (i < revealedCount) {
                 let type = isSequence(sets[i].tiles) ? '上' : '碰';
@@ -228,18 +317,15 @@ function generateNewHand() {
                 handSets.push(sets[i].tiles);
             }
         }
-
         handSets.forEach(t => handTiles = handTiles.concat(t));
         handTiles = handTiles.concat(pair);
     }
 
-    // 選胡牌
     const winIndex = Math.floor(Math.random() * handTiles.length);
     const winTile = handTiles[winIndex];
     handTiles.splice(winIndex, 1);
     handTiles.sort(sortTiles);
 
-    // === 自動判斷 ===
     const calculatedTypes = autoCalculateTypes(revealed, handTiles, winTile, isZimo, flowerCount, sets, pair, scenario === 'ligu');
 
     currentHandData = {
@@ -265,7 +351,6 @@ function generateNewHand() {
     renderHand();
 }
 
-// --- 牌庫與生成輔助 ---
 function initDeck() {
     const deck = {};
     const suits = ['m', 'p', 's'];
@@ -287,33 +372,22 @@ function tryDraw(deck, tilesToCheck) {
 function generateRandomSet(type, preferSuit, forceTerminal) {
     const suits = ['m', 'p', 's', 'z'];
     let suit = preferSuit || suits[Math.floor(Math.random() * 4)];
-    
-    // 如果強制帶么，增加出1,9,字的機率
     if (forceTerminal && Math.random() > 0.3) {
         if (Math.random() > 0.6) suit = 'z'; 
     }
-
     if (suit === 'z') type = 'triplet';
 
     if (type === 'sequence') {
         let num;
-        if (forceTerminal) {
-            // 順子帶么只有 123 或 789
-            num = Math.random() > 0.5 ? 1 : 7; 
-        } else {
-            num = Math.floor(Math.random() * 7) + 1;
-        }
+        if (forceTerminal) num = Math.random() > 0.5 ? 1 : 7; 
+        else num = Math.floor(Math.random() * 7) + 1;
         return { type: 'sequence', tiles: [num+suit, (num+1)+suit, (num+2)+suit] };
     } else {
         let num;
-        if (suit === 'z') {
-            num = Math.floor(Math.random() * 7) + 1;
-        } else {
-            if (forceTerminal) {
-                num = Math.random() > 0.5 ? 1 : 9;
-            } else {
-                num = Math.floor(Math.random() * 9) + 1;
-            }
+        if (suit === 'z') num = Math.floor(Math.random() * 7) + 1;
+        else {
+            if (forceTerminal) num = Math.random() > 0.5 ? 1 : 9;
+            else num = Math.floor(Math.random() * 9) + 1;
         }
         const t = num + suit;
         return { type: 'triplet', tiles: [t, t, t] };
@@ -324,11 +398,9 @@ function generateRandomPair(preferSuit, forceTerminal) {
     const suits = ['m', 'p', 's', 'z'];
     let suit = preferSuit;
     if (!suit) suit = suits[Math.floor(Math.random() * 4)];
-    
     let num;
-    if (suit === 'z') {
-        num = Math.floor(Math.random() * 7) + 1;
-    } else {
+    if (suit === 'z') num = Math.floor(Math.random() * 7) + 1;
+    else {
         if (forceTerminal) num = Math.random() > 0.5 ? 1 : 9;
         else num = Math.floor(Math.random() * 9) + 1;
     }
@@ -336,24 +408,20 @@ function generateRandomPair(preferSuit, forceTerminal) {
     return [t, t];
 }
 
-// --- 4. 核心：自動判斷牌型演算法 (全能版) ---
+// --- 4. 核心：自動判斷牌型演算法 ---
 function autoCalculateTypes(revealed, hand, win, isZimo, flowerCount, allSets, pair, isLigu) {
     let types = [];
     let fullHand = [...hand, win];
     revealed.forEach(group => fullHand = fullHand.concat(group.tiles));
 
-    // A. 基礎環境
-    if (flowerCount === 0) types.push('no-flower');
-    else types.push('has-flower'); 
+    if (flowerCount === 0) types.push('no-flower'); else types.push('has-flower'); 
 
     if (isZimo) {
-        if (revealed.length === 0) types.push('menqing-zimo');
-        else types.push('zimo');
+        if (revealed.length === 0) types.push('menqing-zimo'); else types.push('zimo');
     }
     if (!isZimo && revealed.length === 0) types.push('menqing');
     if (!isZimo && revealed.length === 4) types.push('full-seek');
 
-    // B. 花色判斷
     const suits = new Set(fullHand.map(t => t.substr(1))); 
     const hasWord = suits.has('z'); 
     const colorSuits = [...suits].filter(s => s !== 'z');
@@ -368,31 +436,20 @@ function autoCalculateTypes(revealed, hand, win, isZimo, flowerCount, allSets, p
 
     if (!hasWord && colorSuits.length === 2) types.push('miss-one');
 
-    // C. 結構判斷 (嚦咕 vs 一般)
     if (isLigu) {
         types.push('ligu');
-        // 檢查嚦咕連對
-        const nums = fullHand.filter(t => !t.includes('z')).map(t => parseInt(t)).sort((a,b)=>a-b);
-        // 簡化判斷：尋找連續對子 (需更複雜邏輯才能精確，這裡略過高階連對檢測，只判嚦咕)
-        // 嚦咕無字、清混一色等已在上方涵蓋
     } else {
-        // --- 一般結構 (5面子 + 1眼) ---
         const sequenceCount = allSets.filter(s => s.type === 'sequence').length;
         const tripletCount = allSets.filter(s => s.type === 'triplet').length;
 
         if (tripletCount === 5) types.push('toitoi'); 
         else if (sequenceCount === 5 && flowerCount === 0 && !hasWord) types.push('pinghu');
 
-        // D. 複雜牌型偵測
-        // 1. 姊妹與相逢
         detectSistersAndBrothers(allSets, types);
-        // 2. 步高與龍
         detectStepsAndDragons(allSets, types);
-        // 3. 老少與帶么
         detectTerminals(allSets, pair, types, hasWord);
     }
 
-    // E. 三元/四喜/字
     const honorCounts = {};
     fullHand.filter(t => t.includes('z')).forEach(t => honorCounts[t] = (honorCounts[t] || 0) + 1);
     const dragons = ['5z','6z','7z']; 
@@ -411,14 +468,12 @@ function autoCalculateTypes(revealed, hand, win, isZimo, flowerCount, allSets, p
     
     if ((dragonTriplets + windTriplets) > 0) types.push('has-honor');
 
-    // F. 雞胡 (最後判斷)
     const majorPatterns = [
         'pinghu', 'toitoi', 'hunyise', 'qingyise', 'ziyise', 
         'tanyao', 'ligu', 'sisters-2', 'ming-mixed-step-3', 'ming-pure-dragon',
         'small-3-dragons', 'big-3-dragons', 'small-3-winds', 'big-3-winds', 
         'small-4-winds', 'big-4-winds', 'has-honor', 'hun-dai-yao', 'hun-lao-tou'
     ];
-    // 只要有任何一點點特別的，就不算雞胡
     const validFans = types.filter(t => majorPatterns.includes(t));
     if (validFans.length === 0 && flowerCount === 0 && !hasWord) {
         if (isZimo) types.push('duck'); else types.push('chicken'); 
@@ -427,9 +482,7 @@ function autoCalculateTypes(revealed, hand, win, isZimo, flowerCount, allSets, p
     return types;
 }
 
-// --- 偵測邏輯：姊妹與相逢 ---
 function detectSistersAndBrothers(allSets, types) {
-    // A. 姊妹 (同花色連刻)
     const triplets = allSets.filter(s => s.type === 'triplet' && !s.tiles[0].includes('z'));
     const suits = { m: [], p: [], s: [] };
     triplets.forEach(set => suits[set.tiles[0][1]].push(parseInt(set.tiles[0])));
@@ -445,19 +498,9 @@ function detectSistersAndBrothers(allSets, types) {
         if (maxRun >= 3) types.push('sisters-big-3');
     }
 
-    // B. 兄弟 (不同花色同刻)
-    // 找出 m, p, s 都有的數字
-    let commonNums = [];
-    for(let n=1; n<=9; n++) {
-        if(suits.m.includes(n) && suits.p.includes(n) && suits.s.includes(n)) {
-            types.push('brothers-big-3');
-        }
-    }
-
-    // C. 相逢 (不同花色同順)
     const seqs = allSets.filter(s => s.type === 'sequence');
     const seqSuits = { m: [], p: [], s: [] };
-    seqs.forEach(set => seqSuits[set.tiles[0][1]].push(parseInt(set.tiles[0]))); // 存順子開頭
+    seqs.forEach(set => seqSuits[set.tiles[0][1]].push(parseInt(set.tiles[0]))); 
     for(let n=1; n<=7; n++) {
         if(seqSuits.m.includes(n) && seqSuits.p.includes(n) && seqSuits.s.includes(n)) {
             types.push('xiangfeng-3');
@@ -465,86 +508,57 @@ function detectSistersAndBrothers(allSets, types) {
     }
 }
 
-// --- 偵測邏輯：步高與龍 ---
 function detectStepsAndDragons(allSets, types) {
     const seqs = allSets.filter(s => s.type === 'sequence');
     const seqStarts = { m: new Set(), p: new Set(), s: new Set() };
     seqs.forEach(s => seqStarts[s.tiles[0][1]].add(parseInt(s.tiles[0])));
 
-    // 1. 三色三步高 (123m, 234p, 345s) - 檢查所有排列組合
     const mArr = [...seqStarts.m]; const pArr = [...seqStarts.p]; const sArr = [...seqStarts.s];
     let stepFound = false;
-    // 暴力檢查 m-p-s 遞增
     for(let m of mArr) for(let p of pArr) for(let s of sArr) {
-        // 排序三個起點
         const arr = [m, p, s].sort((a,b)=>a-b);
         if(arr[1] === arr[0]+1 && arr[2] === arr[1]+1) stepFound = true;
     }
     if(stepFound) types.push('ming-mixed-step-3');
 
-    // 2. 雜龍/清龍 (123, 456, 789)
-    // 檢查是否有 1, 4, 7 開頭的順子
     let has123 = { m: seqStarts.m.has(1), p: seqStarts.p.has(1), s: seqStarts.s.has(1) };
     let has456 = { m: seqStarts.m.has(4), p: seqStarts.p.has(4), s: seqStarts.s.has(4) };
     let has789 = { m: seqStarts.m.has(7), p: seqStarts.p.has(7), s: seqStarts.s.has(7) };
 
-    // 清龍
     if ((has123.m && has456.m && has789.m) || (has123.p && has456.p && has789.p) || (has123.s && has456.s && has789.s)) {
         types.push('ming-pure-dragon');
     }
-    // 雜龍 (需要三色各一)
-    // 組合太多，簡化檢查：只要有 1, 4, 7 且分屬三色
-    // 簡單邏輯：總共有 1, 4, 7 起始的順子，且它們花色不同
-    // 這裡只做基本檢查
     if ((has123.m || has123.p || has123.s) && (has456.m || has456.p || has456.s) && (has789.m || has789.p || has789.s)) {
-        // 嚴格檢查略過，暫時視為雜龍可能
         types.push('ming-mixed-dragon'); 
     }
 }
 
-// --- 偵測邏輯：帶么與老少 ---
 function detectTerminals(allSets, pair, types, hasWord) {
-    // 檢查全體組合
     const isTerminal = (tile) => {
         if (tile.includes('z')) return true;
         const n = parseInt(tile);
         return n === 1 || n === 9;
     };
-    
-    // 檢查一組是否包含 1, 9, 字
     const setHasTerminal = (set) => set.tiles.some(isTerminal);
-    // 檢查是否全為刻子 (用於老頭)
     const allTriplets = allSets.every(s => s.type === 'triplet');
-    
-    // 檢查所有 Set 和 Pair
     const allHaveTerminals = allSets.every(setHasTerminal) && isTerminal(pair[0]);
 
     if (allHaveTerminals) {
-        // 全是 1, 9 (無字)
         const hasZ = allSets.some(s => s.tiles[0].includes('z')) || pair[0].includes('z');
-        
         if (!hasZ) {
-            // 清
             if (allTriplets) types.push('qing-lao-tou');
             else types.push('qing-dai-yao');
         } else {
-            // 混
             if (allTriplets) types.push('hun-lao-tou');
             else types.push('hun-dai-yao');
         }
     } else {
-        // 斷么
         const hasAnyTerminal = allSets.some(setHasTerminal) || isTerminal(pair[0]);
         if (!hasAnyTerminal) types.push('tanyao');
     }
 
-    // 老少上/碰
-    // 老少上: 同花色 123 & 789 順子
-    // 老少碰: 同花色 111 & 999 刻子
-    // 掃描 sets
     const seqStarts = { m: new Set(), p: new Set(), s: new Set() };
     const tripNums = { m: new Set(), p: new Set(), s: new Set() };
-    
     allSets.forEach(s => {
         const suit = s.tiles[0][1];
         if(suit === 'z') return;
@@ -559,7 +573,6 @@ function detectTerminals(allSets, pair, types, hasWord) {
     }
 }
 
-// --- 輔助函式 ---
 function sortTiles(a, b) {
     const suitOrder = { 'm': 0, 'p': 1, 's': 2, 'z': 3 };
     const suitA = a.substr(1);
@@ -576,7 +589,6 @@ function isSequence(tiles) {
     return (n2 === n1 + 1) && (n3 === n2 + 1);
 }
 
-// --- UI 渲染與核對 ---
 function renderHand() {
     const revealedContainer = document.getElementById('revealedDisplay');
     revealedContainer.innerHTML = '';
