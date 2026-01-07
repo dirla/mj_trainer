@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>港式台麻番數訓練 (終極版 v6.0)</title>
+    
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header>
+        <h1>🀄 港式台麻番數訓練</h1>
+        <div class="nav-bar">
+            <button id="tab-trainer" class="nav-btn active" onclick="switchTab('trainer')">訓練道場</button>
+            <button id="tab-reference" class="nav-btn" onclick="switchTab('reference')">番數與說明書</button>
+        </div>
+    </header>
+
+    <div id="view-trainer" class="content-view">
+        
+        <div class="game-table">
+            <div class="revealed-area" id="revealedDisplay"></div>
+            
+            <div class="hand-area" id="handDisplay"></div>
+            
+            <div style="font-size: 0.9rem; color: #ecf0f1;">
+                <span id="handStatus"></span>
+            </div>
+        </div>
+
+        <div class="controls">
+            <div class="options-container" id="mainContainer"></div>
+
+            <div class="input-group">
+                <label>總番數：</label>
+                <input type="number" id="userFan" min="0" placeholder="0">
+                <button class="btn-check" onclick="checkAnswer()">核對答案</button>
+                <button class="btn-next" onclick="generateNewHand()">下一題</button>
+            </div>
+
+            <div id="resultBox" class="result-area"></div>
+        </div>
+    </div>
+
+    <div id="view-reference" class="content-view hidden">
+        <div class="reference-container" id="referenceTable">
+            </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
