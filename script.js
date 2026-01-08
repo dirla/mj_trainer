@@ -1,4 +1,4 @@
-// --- 1. 牌型資料庫 (真正完整版：合併明暗 + 獨獨對碰 + 修正雜連刻判定) ---
+// --- 1. 牌型資料庫 (真正完整版：合併明暗 + 獨獨對碰 + 邏輯去重) ---
 const patternList = [
     // === 基礎與字花 ===
     { id: 'no-flower', name: '無花', desc: '沒有花', fan: 2, cat: '基礎與環境', example: [] },
@@ -452,7 +452,56 @@ function autoCalculateTypes(revealed, hand, win, isZimo, flowerCount, allSets, p
         if (isZimo) types.push('duck'); else types.push('chicken');
     }
 
+    // 最後執行：過濾重複牌型 (Clean up redundant subset patterns)
+    filterRedundantTypes(types);
+
     return types;
+}
+
+// 新增：過濾重複牌型函數 (例如有大三雜連刻，就移除小三雜連刻)
+function filterRedundantTypes(types) {
+    const removeIf = (keep, remove) => {
+        if (types.includes(keep)) {
+            const idx = types.indexOf(remove);
+            if (idx > -1) types.splice(idx, 1);
+        }
+    };
+
+    // 兄弟
+    removeIf('brothers-big-3', 'brothers-2');
+
+    // 姊妹 (Sisters)
+    removeIf('sisters-small-6', 'sisters-big-5');
+    removeIf('sisters-big-5', 'sisters-small-5'); // Or check rules? assume Big > Small
+    removeIf('sisters-big-5', 'sisters-big-4');
+    removeIf('sisters-big-4', 'sisters-small-4');
+    removeIf('sisters-big-4', 'sisters-big-3');
+    removeIf('sisters-big-3', 'sisters-small-3');
+    removeIf('sisters-big-3', 'sisters-2');
+    // Note: Small/Big logic in detect already uses else-if, but safe to have.
+
+    // 雜連刻 (Mixed Sisters) - 關鍵修正
+    removeIf('mixed-sisters-big-6', 'mixed-sisters-small-6');
+    removeIf('mixed-sisters-big-5', 'mixed-sisters-small-5');
+    removeIf('mixed-sisters-big-4', 'mixed-sisters-small-4');
+    removeIf('mixed-sisters-big-3', 'mixed-sisters-small-3'); // 移除大三時的小三
+
+    // 步高 (Step)
+    removeIf('pure-step-5', 'pure-step-4');
+    removeIf('pure-step-5', 'pure-step-3');
+    removeIf('pure-step-4', 'pure-step-3');
+
+    removeIf('mixed-step-5', 'mixed-step-4');
+    removeIf('mixed-step-5', 'mixed-step-3');
+    removeIf('mixed-step-4', 'mixed-step-3');
+
+    // 般高 (Ban Gao)
+    removeIf('bangao-4', 'bangao-3');
+    removeIf('bangao-4', 'double-bangao');
+    removeIf('bangao-4', 'bangao');
+    removeIf('bangao-3', 'bangao');
+    removeIf('double-bangao', 'bangao');
+    // full-bangao is distinct (3+1)
 }
 
 function detectWaitTypes(types, allSets, pair, winTile) {
@@ -557,8 +606,7 @@ function detectSistersAndBrothers(allSets, types, pair) {
     if (hasBig3Bro) types.push('brothers-big-3');
     else if (has2Bro) types.push('brothers-2');
 
-    // 2. 雜連刻 (Mixed Sisters): 不同花色 (且不全同花色) 數字相連
-    // 輔助函數: 找出最長的數字相連鏈，且花色不完全相同
+    // 2. 雜連刻 (Mixed Sisters): 數字相連 且「必須包含不同花色」
     function getMaxMixedRun(items) {
         let byNum = {};
         items.forEach(i => {
@@ -594,17 +642,16 @@ function detectSistersAndBrothers(allSets, types, pair) {
         return maxLen;
     }
 
-    // 準備資料
     let tripItems = triplets.map(t => ({num: parseInt(t.tiles[0]), suit: t.tiles[0][1]}));
 
-    // 大雜連刻 (僅刻子)
+    // 大雜連刻
     let bigRun = getMaxMixedRun(tripItems);
-    if (bigRun >= 6) types.push('mixed-sisters-big-6'); // 暫無
+    if (bigRun >= 6) types.push('mixed-sisters-big-6');
     else if (bigRun >= 5) types.push('mixed-sisters-big-5');
     else if (bigRun >= 4) types.push('mixed-sisters-big-4');
     else if (bigRun >= 3) types.push('mixed-sisters-big-3');
 
-    // 小雜連刻 (刻子 + 眼)
+    // 小雜連刻
     if (pair && !pair[0].includes('z')) {
          let pairItem = {num: parseInt(pair[0]), suit: pair[0][1]};
          let combinedItems = [...tripItems, pairItem];
@@ -614,8 +661,6 @@ function detectSistersAndBrothers(allSets, types, pair) {
          else if (totalRun >= 5) types.push('mixed-sisters-small-5');
          else if (totalRun >= 4) types.push('mixed-sisters-small-4');
          else if (totalRun >= 3) {
-             // 若已有大三，通常也滿足小三定義，根據規則可並存或只算大
-             // 這裡兩者都推，讓checkAnswer處理顯示
              types.push('mixed-sisters-small-3');
          }
     }
@@ -827,13 +872,22 @@ function checkAnswer() {
     const extra = checkedIds.filter(t => !correctTypes.includes(t));
     const correctMatches = correctTypes.filter(t => checkedIds.includes(t));
 
-    let msg = '';
+    // 計算總番數
+    const isClosed = currentHandData.revealed.length === 0;
+    let totalFan = 0;
+    correctTypes.forEach(id => {
+        const p = patternList.find(x => x.id === id);
+        if (p) {
+            totalFan += (isClosed && p.fanClosed) ? p.fanClosed : p.fan;
+        }
+    });
+
+    let msg = `<div style="font-size:1.1rem; color:#f1c40f; margin-bottom:12px; padding:8px; border-bottom:1px solid #ddd;">這手牌正確總番數：<strong>${totalFan} 番</strong></div>`;
     const isPerfect = (missing.length === 0 && extra.length === 0);
 
     const formatName = (id) => {
         const p = patternList.find(x => x.id === id);
         if (!p) return id;
-        // 如果有分明/暗，顯示 (X / Y番)
         const fanText = p.fanClosed ? `${p.fan}/${p.fanClosed}` : p.fan;
         return `${p.name} <span style="font-size:0.9em; color:#7f8c8d;">(${fanText}番)</span>`;
     };
@@ -860,7 +914,7 @@ function checkAnswer() {
         resultBox.innerHTML = `<h3 style="margin:0 0 10px 0;">🎉 恭喜全對！</h3>${msg}`;
     } else {
         resultBox.className = 'result-area result-wrong';
-        if (checkedIds.length === 0) msg = "⚠️ 你還沒有選擇任何牌型喔！";
+        if (checkedIds.length === 0) msg += "<br>⚠️ 你還沒有選擇任何牌型喔！";
         resultBox.innerHTML = `<h3 style="margin:0 0 10px 0;">⚠️ 答案未完全正確</h3>${msg}`;
     }
     resultBox.style.display = 'block';
