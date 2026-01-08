@@ -1,4 +1,4 @@
-// --- 1. 牌型資料庫 (真正完整版：合併明暗 + 獨獨對碰 + 修正檢測邏輯) ---
+// --- 1. 牌型資料庫 (真正完整版：合併明暗 + 獨獨對碰 + 修正雜連刻判定) ---
 const patternList = [
     // === 基礎與字花 ===
     { id: 'no-flower', name: '無花', desc: '沒有花', fan: 2, cat: '基礎與環境', example: [] },
@@ -27,7 +27,7 @@ const patternList = [
 
     // === 步高與龍 ===
     { id: 'mixed-step-3', name: '三色三步高', desc: '以三種花色的三組連順', fan: 5, fanClosed: 10, cat: '步高與龍', example: ['1m','2m','3m', '2p','3p','4p', '3s','4s','5s'] },
-    { id: 'mixed-step-4', name: '三色四步高', desc: '以三種花色的四組連順', fan: 20, fanClosed: 40, cat: '步高與龍', example: ['1m','2m','3m', '2p','3p','4p', '3s','4s','5s', '4m','5m','6m'] }, // 需特定組合
+    { id: 'mixed-step-4', name: '三色四步高', desc: '以三種花色的四組連順', fan: 20, fanClosed: 40, cat: '步高與龍', example: ['1m','2m','3m', '2p','3p','4p', '3s','4s','5s', '4m','5m','6m'] },
     { id: 'mixed-step-5', name: '三色五步高', desc: '以三種花色的五組連順', fan: 50, fanClosed: 80, cat: '步高與龍', example: ['1m','2m','3m', '2p','3p','4p', '3s','4s','5s', '4m','5m','6m', '5p','6p','7p'] },
 
     { id: 'pure-step-3', name: '一色三步高', desc: '以同一種花色的三組連順 (遞增1或2)', fan: 15, fanClosed: 25, cat: '步高與龍', example: ['1m','2m','3m', '2m','3m','4m', '3m','4m','5m'] },
@@ -97,7 +97,7 @@ const patternList = [
     { id: 'sisters-big-5', name: '大五姊妹', desc: '五組數字相連的刻子', fan: 90, cat: '兄弟姊妹', example: [] },
     { id: 'sisters-small-6', name: '小六姊妹', desc: '五組數字相連的刻子加上數字相連的眼', fan: 120, cat: '兄弟姊妹', example: [] },
 
-    // === 雜連刻 ===
+    // === 雜連刻 (Mixed Sisters) ===
     { id: 'mixed-sisters-small-3', name: '小三雜連刻', desc: '兩組由不同花色但數字相連的刻子和數字相連的眼', fan: 8, cat: '兄弟姊妹', example: ['2m','2m','2m', '3p','3p','3p', '4s','4s'] },
     { id: 'mixed-sisters-big-3', name: '大三雜連刻', desc: '三組由不同花色但數字相連的刻子', fan: 15, cat: '兄弟姊妹', example: ['2m','2m','2m', '3p','3p','3p', '4s','4s','4s'] },
     { id: 'mixed-sisters-small-4', name: '小四雜連刻', desc: '三組由不同花色但數字相連的刻子和數字相連的眼', fan: 25, cat: '兄弟姊妹', example: [] },
@@ -106,12 +106,12 @@ const patternList = [
     { id: 'mixed-sisters-big-5', name: '大五雜連刻', desc: '五組由不同花色但數字相連的刻子', fan: 65, cat: '兄弟姊妹', example: [] },
     { id: 'mixed-sisters-small-6', name: '小六雜連刻', desc: '五組由不同花色但數字相連的刻子和數字相連的眼', fan: 90, cat: '兄弟姊妹', example: [] },
 
-    // === 相逢與般高 (合併明暗) ===
+    // === 相逢與般高 ===
     { id: 'xiangfeng-2', name: '二相逢', desc: '兩組不同花色但數字相同的順子', fan: 3, cat: '相逢與般高', example: ['1m','2m','3m', '1p','2p','3p'] },
     { id: 'double-sisters', name: '雙姊妹', desc: '兩個二相逢', fan: 10, fanClosed: 15, cat: '相逢與般高', example: ['1m','2m','3m', '1p','2p','3p', '7m','8m','9m', '7p','8p','9p'] },
     { id: 'xiangfeng-3', name: '三相逢', desc: '三組不同花色但數字相同的順子', fan: 10, cat: '相逢與般高', example: ['1m','2m','3m', '1p','2p','3p', '1s','2s','3s'] },
 
-    // 般高 = Identical Sequence
+    // 般高
     { id: 'bangao', name: '一般高', desc: '兩組完全相同的順子', fan: 5, fanClosed: 8, cat: '相逢與般高', example: ['1m','2m','3m', '1m','2m','3m'] },
     { id: 'double-bangao', name: '雙般高', desc: '兩組一般高', fan: 20, fanClosed: 30, cat: '相逢與般高', example: ['1m','2m','3m', '1m','2m','3m', '7p','8p','9p', '7p','8p','9p'] },
     { id: 'bangao-3', name: '三般高', desc: '三組完全相同的順子', fan: 30, fanClosed: 50, cat: '相逢與般高', example: ['1m','2m','3m', '1m','2m','3m', '1m','2m','3m'] },
@@ -378,7 +378,7 @@ function generateRandomPair(preferSuit, forceTerminal) {
     return [t, t];
 }
 
-// --- 4. 核心：自動判斷牌型演算法 (大幅增強) ---
+// --- 4. 核心：自動判斷牌型演算法 ---
 function autoCalculateTypes(revealed, hand, win, isZimo, flowerCount, allSets, pair, isLigu) {
     let types = [];
     let fullHand = [...hand, win];
@@ -415,13 +415,12 @@ function autoCalculateTypes(revealed, hand, win, isZimo, flowerCount, allSets, p
         if (tripletCount === 5) types.push('toitoi');
         else if (sequenceCount === 5 && flowerCount === 0 && !hasWord) types.push('pinghu');
 
-        // 更新後的檢測函數
-        detectSistersAndBrothers(allSets, types);
-        detectStepsAndDragons(allSets, types); // 含步高與龍
+        detectSistersAndBrothers(allSets, types, pair);
+        detectStepsAndDragons(allSets, types);
         detectTerminals(allSets, pair, types, hasWord);
         detectWaitTypes(types, allSets, pair, win);
-        detectBanGao(allSets, types); // 新增：檢測般高 (Identical Sequences)
-        detectXiangFeng(allSets, types); // 新增：檢測相逢 (Same Seq, Diff Suit)
+        detectBanGao(allSets, types);
+        detectXiangFeng(allSets, types);
     }
 
     const honorCounts = {};
@@ -456,7 +455,6 @@ function autoCalculateTypes(revealed, hand, win, isZimo, flowerCount, allSets, p
     return types;
 }
 
-// 檢測聽牌型態
 function detectWaitTypes(types, allSets, pair, winTile) {
     let isDugu = false;
     let isDuipeng = false;
@@ -471,14 +469,10 @@ function detectWaitTypes(types, allSets, pair, winTile) {
                 } else if (set.type === 'sequence') {
                     const nums = set.tiles.map(t => parseInt(t)).sort((a,b)=>a-b);
                     const winNum = parseInt(winTile);
-                    if (nums[1] === winNum) {
-                        isDugu = true; // 嵌張
-                    } else if (nums[0] === winNum) {
-                        // 邊張 (123贏3 或 789贏7)
-                        // 注意: winNum是nums[0]代表這是序列最小的牌，所以只能是 789贏7
+                    if (nums[1] === winNum) isDugu = true;
+                    else if (nums[0] === winNum) {
                         if (nums[0] === 7 && nums[1] === 8 && nums[2] === 9) isDugu = true;
                     } else if (nums[2] === winNum) {
-                        // 贏最大那張，邊張只能是 123贏3
                         if (nums[0] === 1 && nums[1] === 2 && nums[2] === 3) isDugu = true;
                     }
                 }
@@ -490,67 +484,50 @@ function detectWaitTypes(types, allSets, pair, winTile) {
     if (isDuipeng) types.push('duipeng');
 }
 
-// 檢測般高 (Ban Gao) - Identical Sequences
 function detectBanGao(allSets, types) {
     const seqs = allSets.filter(s => s.type === 'sequence');
     const counts = {};
-
-    // 計算每種順子出現的次數 (key ex: "2m")
     seqs.forEach(s => {
-        const key = s.tiles[0]; // 使用順子第一張牌作為標識
+        const key = s.tiles[0];
         counts[key] = (counts[key] || 0) + 1;
     });
-
-    let pairs = 0;
-    let triplets = 0;
-    let quads = 0;
-
+    let pairs = 0; let triplets = 0; let quads = 0;
     Object.values(counts).forEach(c => {
         if (c === 2) pairs++;
         if (c === 3) triplets++;
         if (c === 4) quads++;
     });
-
     if (quads >= 1) types.push('bangao-4');
-    else if (triplets >= 1 && pairs >= 1) types.push('full-bangao'); // 三般高+一般高 = 全般高
+    else if (triplets >= 1 && pairs >= 1) types.push('full-bangao');
     else if (triplets >= 1) types.push('bangao-3');
     else if (pairs === 2) types.push('double-bangao');
     else if (pairs === 1) types.push('bangao');
 }
 
-// 檢測相逢 (Xiang Feng) - Same Sequence Number, Different Suit
 function detectXiangFeng(allSets, types) {
     const seqs = allSets.filter(s => s.type === 'sequence');
-    const numCounts = {}; // Key: "2" (代表 234順子), Value: Set of suits {'m', 'p'}
-
+    const numCounts = {};
     seqs.forEach(s => {
         const num = parseInt(s.tiles[0]);
         const suit = s.tiles[0][1];
         if (!numCounts[num]) numCounts[num] = new Set();
         numCounts[num].add(suit);
     });
-
-    let has3 = false;
-    let has2 = false;
-
+    let has3 = false; let has2 = false;
     Object.values(numCounts).forEach(suitSet => {
         if (suitSet.size === 3) has3 = true;
         if (suitSet.size === 2) has2 = true;
     });
-
     if (has3) types.push('xiangfeng-3');
-    // 如果有三相逢，通常也符合二相逢定義，但規則上通常取大。
-    // 若要同時顯示，可保留。這裡假設若有三就不推二，避免重複計算，或者根據規則疊加。
-    // 這裡設定：若有3推3，若沒3但有2推2
     else if (has2) types.push('xiangfeng-2');
 }
 
-function detectSistersAndBrothers(allSets, types) {
+function detectSistersAndBrothers(allSets, types, pair) {
+    // 1. 姊妹 (Sisters): 同花色 連續刻子
     const triplets = allSets.filter(s => s.type === 'triplet' && !s.tiles[0].includes('z'));
     const suits = { m: [], p: [], s: [] };
     triplets.forEach(set => suits[set.tiles[0][1]].push(parseInt(set.tiles[0])));
 
-    // 檢測姊妹 (同花色連刻)
     for (const s in suits) {
         let nums = suits[s].sort((a,b)=>a-b);
         let maxRun = 1; let currRun = 1;
@@ -558,14 +535,14 @@ function detectSistersAndBrothers(allSets, types) {
             if(nums[i+1] === nums[i]+1) currRun++; else currRun = 1;
             maxRun = Math.max(maxRun, currRun);
         }
-        if (maxRun >= 6) types.push('sisters-small-6'); // 假設
+        if (maxRun >= 6) types.push('sisters-small-6');
         else if (maxRun >= 5) types.push('sisters-big-5');
         else if (maxRun >= 4) types.push('sisters-big-4');
         else if (maxRun >= 3) types.push('sisters-big-3');
         else if (maxRun >= 2) types.push('sisters-2');
     }
 
-    // 檢測兄弟 (不同花色同數字刻子)
+    // 兄弟 (Brothers): 不同花色 相同數字
     const tripNums = {};
     triplets.forEach(t => {
         const n = parseInt(t.tiles[0]);
@@ -580,61 +557,99 @@ function detectSistersAndBrothers(allSets, types) {
     if (hasBig3Bro) types.push('brothers-big-3');
     else if (has2Bro) types.push('brothers-2');
 
-    // 雜連刻 (Mixed Sisters) - 不同花色 數字相連
-    // 邏輯複雜，這裡做一個簡單檢測：所有刻子數字排序，看是否有連號
-    const allTripNums = triplets.map(t => parseInt(t.tiles[0])).sort((a,b)=>a-b);
-    let mixRun = 1; let maxMixRun = 1;
-    for(let i=0; i<allTripNums.length-1; i++) {
-        if(allTripNums[i+1] === allTripNums[i]+1) mixRun++; else mixRun = 1;
-        maxMixRun = Math.max(maxMixRun, mixRun);
+    // 2. 雜連刻 (Mixed Sisters): 不同花色 (且不全同花色) 數字相連
+    // 輔助函數: 找出最長的數字相連鏈，且花色不完全相同
+    function getMaxMixedRun(items) {
+        let byNum = {};
+        items.forEach(i => {
+            if(!byNum[i.num]) byNum[i.num] = [];
+            byNum[i.num].push(i.suit);
+        });
+
+        let nums = Object.keys(byNum).map(Number).sort((a,b)=>a-b);
+        let maxLen = 0;
+
+        function dfs(currNum, currentChainLength, currentSuits) {
+            if (currentChainLength > 1) {
+                const uniqueSuits = new Set(currentSuits);
+                // 關鍵修正: 必須包含多種花色，否則視為純姊妹
+                if (uniqueSuits.size > 1) {
+                    maxLen = Math.max(maxLen, currentChainLength);
+                }
+            }
+
+            let nextNum = currNum + 1;
+            if (byNum[nextNum]) {
+                for (let suit of byNum[nextNum]) {
+                    dfs(nextNum, currentChainLength + 1, [...currentSuits, suit]);
+                }
+            }
+        }
+
+        nums.forEach(n => {
+            for (let suit of byNum[n]) {
+                dfs(n, 1, [suit]);
+            }
+        });
+        return maxLen;
     }
-    // 嚴謹規則可能要求花色不同，這裡暫做寬鬆檢測
-    if (maxMixRun >= 3) types.push('mixed-sisters-big-3');
-    else if (maxMixRun >= 2) types.push('mixed-sisters-small-3'); // 這裡假設小三需要眼
+
+    // 準備資料
+    let tripItems = triplets.map(t => ({num: parseInt(t.tiles[0]), suit: t.tiles[0][1]}));
+
+    // 大雜連刻 (僅刻子)
+    let bigRun = getMaxMixedRun(tripItems);
+    if (bigRun >= 6) types.push('mixed-sisters-big-6'); // 暫無
+    else if (bigRun >= 5) types.push('mixed-sisters-big-5');
+    else if (bigRun >= 4) types.push('mixed-sisters-big-4');
+    else if (bigRun >= 3) types.push('mixed-sisters-big-3');
+
+    // 小雜連刻 (刻子 + 眼)
+    if (pair && !pair[0].includes('z')) {
+         let pairItem = {num: parseInt(pair[0]), suit: pair[0][1]};
+         let combinedItems = [...tripItems, pairItem];
+         let totalRun = getMaxMixedRun(combinedItems);
+
+         if (totalRun >= 6) types.push('mixed-sisters-small-6');
+         else if (totalRun >= 5) types.push('mixed-sisters-small-5');
+         else if (totalRun >= 4) types.push('mixed-sisters-small-4');
+         else if (totalRun >= 3) {
+             // 若已有大三，通常也滿足小三定義，根據規則可並存或只算大
+             // 這裡兩者都推，讓checkAnswer處理顯示
+             types.push('mixed-sisters-small-3');
+         }
+    }
 }
 
-// 檢測步高與龍 (大幅修正)
 function detectStepsAndDragons(allSets, types) {
     const seqs = allSets.filter(s => s.type === 'sequence');
     const seqStarts = { m: [], p: [], s: [] };
     seqs.forEach(s => seqStarts[s.tiles[0][1]].push(parseInt(s.tiles[0])));
 
-    // 排序
     seqStarts.m.sort((a,b)=>a-b);
     seqStarts.p.sort((a,b)=>a-b);
     seqStarts.s.sort((a,b)=>a-b);
 
-    // 1. 一色步高 (Pure Step) - 同花色 遞增1或2
     ['m','p','s'].forEach(suit => {
         const arr = seqStarts[suit];
         if (arr.length >= 3) {
-            // 檢查遞增 1
             let maxStep1 = 1; let currStep1 = 1;
             for(let i=0; i<arr.length-1; i++) { if(arr[i+1] === arr[i]+1) currStep1++; else if(arr[i+1]!==arr[i]) currStep1=1; maxStep1 = Math.max(maxStep1, currStep1); }
 
-            // 檢查遞增 2
             let maxStep2 = 1;
-            // 簡單檢查 3個
             for(let i=0; i<arr.length-2; i++) {
                 if (arr[i+1]===arr[i]+2 && arr[i+2]===arr[i]+4) maxStep2 = 3;
-                if (arr[i+1]===arr[i]+1 && arr[i+2]===arr[i]+2) maxStep1 = 3; // Double check for 3 consecutive
+                if (arr[i+1]===arr[i]+1 && arr[i+2]===arr[i]+2) maxStep1 = 3;
             }
-            // 檢查 4個
-            if (arr.length >=4) {
-                 // 邏輯需更嚴謹，這裡簡化
-                 if (maxStep1 >= 4) types.push('pure-step-4');
-            }
+            if (arr.length >=4 && maxStep1 >= 4) types.push('pure-step-4');
 
             if (maxStep1 >= 3 || maxStep2 >= 3) types.push('pure-step-3');
         }
     });
 
-    // 2. 三色步高 (Mixed Step) - 不同花色 遞增1
-    // 需要從 m, p, s 各取一個組成 n, n+1, n+2
     let mixedStepFound = false;
     const m = seqStarts.m; const p = seqStarts.p; const s = seqStarts.s;
 
-    // 暴力窮舉所有組合 (最多 4*4*4 = 64次，很快)
     for (let i of m) {
         for (let j of p) {
             for (let k of s) {
@@ -647,7 +662,6 @@ function detectStepsAndDragons(allSets, types) {
     }
     if (mixedStepFound) types.push('mixed-step-3');
 
-    // 3. 龍 (Dragon)
     let has123 = { m: seqStarts.m.includes(1), p: seqStarts.p.includes(1), s: seqStarts.s.includes(1) };
     let has456 = { m: seqStarts.m.includes(4), p: seqStarts.p.includes(4), s: seqStarts.s.includes(4) };
     let has789 = { m: seqStarts.m.includes(7), p: seqStarts.p.includes(7), s: seqStarts.s.includes(7) };
@@ -656,7 +670,6 @@ function detectStepsAndDragons(allSets, types) {
         types.push('pure-dragon');
     }
     if ((has123.m || has123.p || has123.s) && (has456.m || has456.p || has456.s) && (has789.m || has789.p || has789.s)) {
-        // 確保不同花色? 簡化版通常只要有這三組就算
         types.push('mixed-dragon');
     }
 }
